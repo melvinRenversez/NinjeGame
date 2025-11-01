@@ -1,6 +1,6 @@
 
 class Ninja {
-   constructor(position, width, height, speed, jumpForce, inputs, maxJumps, direction) {
+   constructor(position, width, height, speed, jumpForce, inputs, maxJumps, direction, attackRange, callDownAttack) {
       this.position = position
       this.width = width;
       this.height = height;
@@ -24,11 +24,13 @@ class Ninja {
       this.attackBox = {
          x: 0,
          y: 0,
-         width: 100,
-         height: 50
       }
 
+      this.attackRange = attackRange;
+
+      this.callDownAttack = callDownAttack;
       this.isAttacking = false;
+      this.enableAttack = true;
    }
 
    update() {
@@ -40,8 +42,8 @@ class Ninja {
    changeDirection() {
       if (this.direction === 1) {
          this.attackBox.x = 0
-      }else{
-         this.attackBox.x = -this.attackBox.width + this.width
+      } else {
+         this.attackBox.x = -this.attackRange + this.width
 
       }
    }
@@ -56,8 +58,8 @@ class Ninja {
          ctx.fillRect(
             this.position.x + this.attackBox.x,
             this.position.y + this.attackBox.y,
-            this.attackBox.width,
-            this.attackBox.height
+            this.attackRange,
+            50
          );
       }
    }
@@ -112,7 +114,6 @@ class Ninja {
 
 
    input(key) {
-      console.log(key);
       if (key.status === 'pressed') {
          switch (key.key) {
             case this.inputs.left.key:
@@ -129,10 +130,15 @@ class Ninja {
                this.jumps++;
                break;
             case this.inputs.attack.key:
+               if (!this.enableAttack) return;
                this.isAttacking = true;
                setTimeout(() => {
                   this.isAttacking = false;
+                  this.enableAttack = false;
                }, 100);
+               setTimeout(() => {
+                  this.enableAttack = true;
+               }, this.callDownAttack * 1000);
                break;
          }
       } else if (key.status === 'released') {

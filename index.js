@@ -36,7 +36,9 @@ const ninja1 = new Ninja(
       }
    },
    maxJumps = 5,
-   direction = -1
+   direction = -1,
+   attackRange = 100,
+   callDownAttack = 1
 );
 players.push(ninja1);
 
@@ -65,10 +67,11 @@ const ninja2 = new Ninja(
       }
    },
    maxJumps = 5,
-   direction = -1
+   direction = -1,
+   attackRange = 150,
+   callDownAttack = 2
 );
 players.push(ninja2);
-
 
 
 function gameLoop() {
