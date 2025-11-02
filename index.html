@@ -8,8 +8,27 @@
    <link rel="stylesheet" href="index.css">
 </head>
 <body>
-   <canvas id="canvas"></canvas>
 
+   <div class="content">
+      <div class="info">
+         <div id="player1healthBar" class="healthBar left">
+            <div id="progress" class="progress"></div>
+            <span>100</span>
+         </div>
+         <div class="timer">
+            60
+         </div>
+         <div id="player2healthBar" class="healthBar">
+            <div id="progress" class="progress"></div>
+            <span>100</span>
+         </div>
+      </div>
+   
+      <canvas id="canvas"></canvas>
+   </div>
+
+
+   <script src="./Sprite.js" defer></script>
    <script src="./Ninja.js" defer></script>
    <script src="./index.js" defer></script>
 </body>

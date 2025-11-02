@@ -1,6 +1,6 @@
 
 class Ninja {
-   constructor(position, width, height, speed, jumpForce, inputs, maxJumps, direction, attackRange, callDownAttack) {
+   constructor(position, width, height, speed, jumpForce, inputs, maxJumps, direction, attackRange, callDownAttack, healthBar, health, attackDamage) {
       this.position = position
       this.width = width;
       this.height = height;
@@ -20,23 +20,45 @@ class Ninja {
       this.jumps = maxJumps;
 
       this.direction = direction;
+      this.attackRange = attackRange;
 
       this.attackBox = {
          x: 0,
          y: 0,
+         width: this.attackRange,
+         height: 50
       }
 
-      this.attackRange = attackRange;
 
       this.callDownAttack = callDownAttack;
       this.isAttacking = false;
       this.enableAttack = true;
+
+      this.health = health
+      this.maxHealth = health
+      this.healthBar = healthBar
+
+      this.attackDamage = attackDamage
+
+
+   }
+
+   takeDamage(damage) {
+      this.health -= damage
+      if (this.health <= 0) this.health = 0
    }
 
    update() {
-      this.changeDirection()
+      this.changeDirection();
       this.move();
       this.draw();
+      this.drawHealthBar();
+   }
+
+   drawHealthBar() {
+      const pourcentage = this.health / this.maxHealth * 100
+      this.healthBar.children[0].style.width = (100 - pourcentage) + "%"
+      this.healthBar.children[1].innerHTML = this.health
    }
 
    changeDirection() {
@@ -49,19 +71,37 @@ class Ninja {
    }
 
    draw() {
-      ctx.fillStyle = 'red';
+      ctx.fillStyle = 'blue';
       ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+
 
       // ---- Attack Box ----
       if (this.isAttacking) {
-         ctx.fillStyle = 'blue';
+         ctx.fillStyle = 'red';
          ctx.fillRect(
             this.position.x + this.attackBox.x,
             this.position.y + this.attackBox.y,
-            this.attackRange,
-            50
+            this.attackBox.width,
+            this.attackBox.height
          );
       }
+   }
+
+   attack() {
+
+
+      this.isAttacking = true;
+
+      checkCollision(this)
+
+      setTimeout(() => {
+         this.isAttacking = false;
+         this.enableAttack = false;
+      }, 100);
+      setTimeout(() => {
+         this.enableAttack = true;
+      }, this.callDownAttack * 1000);
+
    }
 
    move() {
@@ -131,14 +171,7 @@ class Ninja {
                break;
             case this.inputs.attack.key:
                if (!this.enableAttack) return;
-               this.isAttacking = true;
-               setTimeout(() => {
-                  this.isAttacking = false;
-                  this.enableAttack = false;
-               }, 100);
-               setTimeout(() => {
-                  this.enableAttack = true;
-               }, this.callDownAttack * 1000);
+               this.attack()
                break;
          }
       } else if (key.status === 'released') {

@@ -19,3 +19,50 @@ body{
    width: 1024px;
    height: 576px;
 }
+
+.content{
+   display: flex;
+
+   flex-direction: column;
+
+   align-items: center;
+
+   gap: 40px;
+}
+
+.timer{
+   font-size: 24px;
+}
+
+.info{
+   display: flex;
+   gap: 30px;
+}
+
+.healthBar{
+   position: relative;
+   background: green;
+
+   display: flex;
+
+   width: 900px;
+   height: 30px;
+}
+
+.healthBar span{
+   position: absolute;
+   top: 50%;
+   transform: translateY(-50%);
+   padding: 20px;
+}
+
+.left{
+   justify-content: flex-end;
+}
+
+.progress{
+   width: 70%;
+   height: 100%;
+
+   background: red;
+}
