@@ -1,6 +1,6 @@
 
 class Ninja {
-   constructor(position, width, height, speed, jumpForce, inputs, maxJumps, direction, attackRange, callDownAttack, healthBar, health, attackDamage) {
+   constructor({ position, width, height, speed, jumpForce, inputs, maxJumps, direction, attackRange, callDownAttack, healthBar, health, attackDamage, sprites }) {
       this.position = position
       this.width = width;
       this.height = height;
@@ -31,7 +31,7 @@ class Ninja {
 
 
       this.callDownAttack = callDownAttack;
-      this.isAttacking = false;
+
       this.enableAttack = true;
 
       this.health = health
@@ -39,6 +39,87 @@ class Ninja {
       this.healthBar = healthBar
 
       this.attackDamage = attackDamage
+
+      this.currentLastAnimation = 'idle'
+      this.currentAnimation = 'idle'
+
+      this.isAttacking = false;
+      this.isJumping = false;
+      this.isMoving = false;
+      this.isDead = false;
+
+      this.sprites = sprites;
+
+
+      this.sprite = new Sprite(
+         {
+            position: this.position,
+            imageSrc: this.sprites[this.currentAnimation].src,
+            scale: this.sprites[this.currentAnimation].scale,
+            offset: this.sprites[this.currentAnimation].offset,
+            framesMax: this.sprites[this.currentAnimation].framesMax,
+            speed: this.sprites[this.currentAnimation].speed
+         }
+      );
+
+
+   }
+
+   checkLife() {
+      if (this.health <= 0) {
+         this.isDead = true;
+         this.changeAnimation();
+      }
+   }
+
+   changeAnimation() {
+
+      if (this.isDead) {
+         this.currentAnimation = 'death';
+         if (this.currentAnimation !== this.currentLastAnimation) {
+            this.currentLastAnimation = this.currentAnimation;
+            this.sprite.change(
+               {
+                  imageSrc: this.sprites[this.currentAnimation].src,
+                  scale: this.sprites[this.currentAnimation].scale,
+                  offset: this.sprites[this.currentAnimation].offset,
+                  framesMax: this.sprites[this.currentAnimation].framesMax,
+                  speed: this.sprites[this.currentAnimation].speed,
+                  direction: this.direction
+               }
+            )
+         }
+         return;
+
+      } else {
+         if (this.isAttacking) this.currentAnimation = 'attack';
+         else if (this.isJumping) this.currentAnimation = 'jump';
+         else if (this.velocity.y !== 0) this.currentAnimation = 'fall';
+         else if (this.isMoving) this.currentAnimation = 'run';
+         else this.currentAnimation = 'idle';
+
+
+
+         if (this.currentAnimation === this.currentLastAnimation) {
+            this.sprite.changeDirection(this.direction);
+            return;
+         };
+
+         this.currentLastAnimation = this.currentAnimation;
+
+         this.sprite.change(
+
+            {
+               imageSrc: this.sprites[this.currentAnimation].src,
+               scale: this.sprites[this.currentAnimation].scale,
+               offset: this.sprites[this.currentAnimation].offset,
+               framesMax: this.sprites[this.currentAnimation].framesMax,
+               speed: this.sprites[this.currentAnimation].speed,
+               direction: this.direction
+            }
+         )
+      }
+
 
 
    }
@@ -48,11 +129,29 @@ class Ninja {
       if (this.health <= 0) this.health = 0
    }
 
+   checkDirection() {
+      if (this.velocity.x > 0) {
+         this.direction = 1
+      } else if (this.velocity.x < 0) {
+         this.direction = -1
+      }
+
+
+      this.changeAnimation()
+   }
+
    update() {
-      this.changeDirection();
-      this.move();
-      this.draw();
+      if (!this.isDead) {
+
+         this.checkDirection();
+         this.changeDirection();
+         this.move();
+         this.checkLife();
+      }
+      // this.draw();
       this.drawHealthBar();
+
+      this.sprite.draw();
    }
 
    drawHealthBar() {
@@ -70,22 +169,25 @@ class Ninja {
       }
    }
 
-   draw() {
-      ctx.fillStyle = 'blue';
-      ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+   // draw() {
+   //    ctx.fillStyle = 'blue';
+   //    ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
 
 
-      // ---- Attack Box ----
-      if (this.isAttacking) {
-         ctx.fillStyle = 'red';
-         ctx.fillRect(
-            this.position.x + this.attackBox.x,
-            this.position.y + this.attackBox.y,
-            this.attackBox.width,
-            this.attackBox.height
-         );
-      }
-   }
+   //    // ---- Sprite ----
+   //    this.sprite.draw();
+
+   //    // ---- Attack Box ----
+   //    // if (this.isAttacking) {
+   //    ctx.fillStyle = 'rgba(255,0,0,0.5)';
+   //    ctx.fillRect(
+   //       this.position.x + this.attackBox.x,
+   //       this.position.y,
+   //       this.attackBox.width,
+   //       this.attackBox.height
+   //    );
+   //    // }
+   // }
 
    attack() {
 
@@ -93,10 +195,12 @@ class Ninja {
       this.isAttacking = true;
 
       checkCollision(this)
+      this.changeAnimation();
 
       setTimeout(() => {
          this.isAttacking = false;
          this.enableAttack = false;
+         this.changeAnimation();
       }, 100);
       setTimeout(() => {
          this.enableAttack = true;
@@ -106,15 +210,19 @@ class Ninja {
 
    move() {
 
+
       // ---- Déplacement horizontal ----
       if (this.inputs.left.status === 'pressed' && this.lastKey === this.inputs.left.key) {
          this.velocity.x = -1;
-         this.direction = -1;
+         this.changeAnimation();
+
       } else if (this.inputs.right.status === 'pressed' && this.lastKey === this.inputs.right.key) {
          this.velocity.x = 1;
-         this.direction = 1;
+         this.changeAnimation();
       } else {
          this.velocity.x = 0;
+         this.isMoving = false;
+         this.changeAnimation()
       }
 
       // ---- Collision left ----
@@ -137,8 +245,8 @@ class Ninja {
       this.position.y += this.velocity.y;
 
       // ---- Collision avec le sol ----
-      if (this.position.y + this.height >= canvas.height) {
-         this.position.y = canvas.height - this.height;
+      if (this.position.y + this.height >= GROUND_LEVEL) {
+         this.position.y = GROUND_LEVEL - this.height;
          this.velocity.y = 0;
          this.jumps = 0; // reset les sauts
       }
@@ -159,15 +267,26 @@ class Ninja {
             case this.inputs.left.key:
                this.inputs.left.status = 'pressed';
                this.lastKey = this.inputs.left.key;
+               this.isMoving = true;
+               this.changeAnimation()
                break;
             case this.inputs.right.key:
                this.inputs.right.status = 'pressed';
                this.lastKey = this.inputs.right.key;
+               this.isMoving = true;
+               this.changeAnimation()
                break;
             case this.inputs.up.key:
+               // ---- Jump ----
                if (this.jumps >= this.maxJumps) return;
                this.velocity.y = this.jumpForce * -1;
                this.jumps++;
+               this.isJumping = true;
+               this.changeAnimation()
+               setTimeout(() => {
+                  this.isJumping = false;
+                  this.changeAnimation()
+               }, 100)
                break;
             case this.inputs.attack.key:
                if (!this.enableAttack) return;
