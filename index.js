@@ -21,7 +21,7 @@ players = []
 
 const ninja1 = new Ninja(
    {
-      position: { x: 500, y: 100 },
+      position: { x: 60, y: 100 },
       width: 50,
       height: 150,
       speed: 12,
@@ -49,8 +49,8 @@ const ninja1 = new Ninja(
       attackRange: 250,
       callDownAttack: 1,
       healthBar: player1HealthBar,
-      health: 100,
-      attackDamage: 12,
+      health: 20,
+      attackDamage: 48,
       sprites: {
          idle: {
             src: "./assets/Musashi/Idle.png",
@@ -92,8 +92,7 @@ const ninja1 = new Ninja(
             framesMax: 6,
             scale: 2.5,
             offset: { x: 225, y: 155 },
-            speed: 0.1,
-            deadAnimation: true
+            speed: 10
          }
       }
    }
@@ -102,7 +101,7 @@ players.push(ninja1);
 
 const ninja2 = new Ninja(
    {
-      position: { x: 160, y: 100 },
+      position: { x: 1800, y: 100 },
       width: 50,
       height: 150,
       speed: 12,
@@ -121,17 +120,17 @@ const ninja2 = new Ninja(
             status: 'released'
          },
          attack: {
-            key: 'ArrowDown',
+            key: 'Enter',
             status: 'released'
          }
       },
       maxJumps: 5,
-      direction: 1,
-      attackRange: 200,
-      callDownAttack: 2,
+      direction: -1,
+      attackRange: 250,
+      callDownAttack: 1,
       healthBar: player2HealthBar,
-      health: 8,
-      attackDamage: 9,
+      health: 10,
+      attackDamage: 48,
       sprites: {
          idle: {
             src: "./assets/Yoshitsune/Idle.png",
@@ -172,9 +171,8 @@ const ninja2 = new Ninja(
             src: "./assets/Yoshitsune/Death.png",
             framesMax: 7,
             scale: 2.5,
-            offset: { x: 225, y: 155 },
-            speed: 0.1,
-            deadAnimation: true
+            offset: { x: 225, y: 170 },
+            speed: 10
          }
       }
    }
@@ -236,10 +234,13 @@ function gameLoop() {
       player.update();
    });
 
+   // ninja2.log();
+
    requestAnimationFrame(gameLoop);
 }
 
 window.addEventListener('keydown', (event) => {
+   // console.log(event.key)
    players.forEach((player) => {
       player.input({
          status: 'pressed',
@@ -270,6 +271,7 @@ function checkCollision(attacker) {
             attacker.position.y + attacker.attackBox.height <= player.position.y + player.height
          ) {
             player.takeDamage(attacker.attackDamage)
+            console.log('hit')
          }
 
 
@@ -279,3 +281,10 @@ function checkCollision(attacker) {
 }
 
 gameLoop();
+
+function resetGame(btn){
+   btn.blur();
+   players.forEach((player) => {
+      player.reset()
+   });
+}

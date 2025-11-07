@@ -6,51 +6,35 @@ class Ninja {
       this.height = height;
       this.speed = speed;
       this.jumpForce = jumpForce;
-
       this.velocity = {
          x: 0,
          y: 0
       };
-
       this.inputs = inputs;
-
       this.lastKey;
-
       this.maxJumps = maxJumps;
       this.jumps = maxJumps;
-
       this.direction = direction;
       this.attackRange = attackRange;
-
       this.attackBox = {
          x: 0,
          y: 0,
          width: this.attackRange,
          height: 50
       }
-
-
       this.callDownAttack = callDownAttack;
-
       this.enableAttack = true;
-
       this.health = health
       this.maxHealth = health
       this.healthBar = healthBar
-
       this.attackDamage = attackDamage
-
       this.currentLastAnimation = 'idle'
       this.currentAnimation = 'idle'
-
       this.isAttacking = false;
       this.isJumping = false;
       this.isMoving = false;
       this.isDead = false;
-
       this.sprites = sprites;
-
-
       this.sprite = new Sprite(
          {
             position: this.position,
@@ -61,8 +45,10 @@ class Ninja {
             speed: this.sprites[this.currentAnimation].speed
          }
       );
-
-
+      this.resetParams = {
+         position: position,
+         health: health
+      }
    }
 
    checkLife() {
@@ -78,6 +64,7 @@ class Ninja {
          this.currentAnimation = 'death';
          if (this.currentAnimation !== this.currentLastAnimation) {
             this.currentLastAnimation = this.currentAnimation;
+            this.sprite.setDeadAniamtion()
             this.sprite.change(
                {
                   imageSrc: this.sprites[this.currentAnimation].src,
@@ -149,6 +136,7 @@ class Ninja {
          this.checkLife();
       }
       // this.draw();
+      this.gravityEffect();
       this.drawHealthBar();
 
       this.sprite.draw();
@@ -240,6 +228,17 @@ class Ninja {
       // ---- Application du déplacement horizontal ----
       this.position.x += this.velocity.x * this.speed;
 
+
+      // ---- Collision avec le plafond ----
+      if (this.position.y < 0) {
+         this.position.y = 0;
+         if (this.velocity.y < 0) {
+            this.velocity.y *= -0.2;
+         }
+      }
+   }
+
+   gravityEffect() {
       // ---- Gravité ----
       this.velocity.y += GRAVITY;
       this.position.y += this.velocity.y;
@@ -249,14 +248,6 @@ class Ninja {
          this.position.y = GROUND_LEVEL - this.height;
          this.velocity.y = 0;
          this.jumps = 0; // reset les sauts
-      }
-
-      // ---- Collision avec le plafond ----
-      if (this.position.y < 0) {
-         this.position.y = 0;
-         if (this.velocity.y < 0) {
-            this.velocity.y *= -0.2;
-         }
       }
    }
 
@@ -279,6 +270,7 @@ class Ninja {
             case this.inputs.up.key:
                // ---- Jump ----
                if (this.jumps >= this.maxJumps) return;
+               if (this.isDead) return;
                this.velocity.y = this.jumpForce * -1;
                this.jumps++;
                this.isJumping = true;
@@ -290,6 +282,7 @@ class Ninja {
                break;
             case this.inputs.attack.key:
                if (!this.enableAttack) return;
+               if (this.isDead) return;
                this.attack()
                break;
          }
@@ -309,5 +302,28 @@ class Ninja {
                break;
          }
       }
+   }
+
+
+   log() {
+      console.log("______________________________________________________________");
+      console.log('health:', JSON.stringify(this.health, null, 2));
+      console.log('isDead:', JSON.stringify(this.isDead, null, 2));
+      console.log('position:', JSON.stringify(this.position, null, 2));
+      console.log('velocity:', JSON.stringify(this.velocity, null, 2));
+      console.log('enableAttack:', JSON.stringify(this.enableAttack, null, 2));
+      console.log('sprite:', JSON.stringify(this.sprite, null, 2));
+
+
+   }
+
+
+   reset() {
+      console.log('Resetting ninja...');
+      this.position = this.resetParams.position;
+      this.health = this.resetParams.health;
+      this.isDead = false;
+      this.sprite.reset();
+      this.changeAnimation();
    }
 }

@@ -1,5 +1,5 @@
 class Sprite {
-    constructor({position, imageSrc, scale = 1, offset = { x: 0, y: 0 }, framesMax = 1, speed, direction = 1, deadAnimation = false}) {
+    constructor({position, imageSrc, scale = 1, offset = { x: 0, y: 0 }, framesMax = 1, speed, direction = 1}) {
 
         this.position = position;
 
@@ -20,7 +20,7 @@ class Sprite {
 
         this.direction = direction
 
-        this.deadAnimation = deadAnimation
+        this.deadAnimation = false
         this.deadAnimationPlayed = false
 
     }
@@ -29,7 +29,7 @@ class Sprite {
     draw() {
     this.framesElapsed++;
 
-    console.log(this.deadAnimationPlayed)
+    // console.log(this.deadAnimationPlayed, this.currentFrame, this.framesMax, this.deadAnimation)
 
     if (!this.deadAnimationPlayed){
         this.currentFrame = Math.floor((this.framesElapsed / this.speed) % this.framesMax);
@@ -91,7 +91,18 @@ class Sprite {
             this.direction = direction
         }
 
+    setDeadAniamtion(){
+        this.deadAnimation = true
+    }
+
     update() {
         this.draw()
+    }
+
+    reset() {
+        this.currentFrame = 0
+        this.framesElapsed = 0
+        this.deadAnimation = false
+        this.deadAnimationPlayed = false
     }
 }
